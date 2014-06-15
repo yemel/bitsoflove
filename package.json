@@ -1,0 +1,29 @@
+{
+  "name": "bitsoflove",
+  "version": "0.0.1",
+  "description": "A cryptographic proof of you love",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:yemel/bitsoflove.git"
+  },
+  "keywords": [
+    "Bitcoin"
+  ],
+  "author": "Yemel Jardi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yemel/bitsoflove/issues"
+  },
+  "homepage": "https://github.com/yemel/bitsoflove",
+  "dependencies": {
+    "express": "^4.4.1",
+    "logfmt": "^1.1.2",
+    "passport": "^0.2.0",
+    "passport-twitter": "^1.0.2",
+    "request": "^2.36.0"
+  }
+}
