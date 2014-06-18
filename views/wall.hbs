@@ -1,0 +1,11 @@
+<html>
+<title>BitsOfLove.me | Show your support with bitcoins</title>
+<body>
+  <h1>The Wall of {{topic}}</h1>
+  {{#if user}}
+    Hey @{{ user.username }}, Address: xxxxx / QR: xxxxxx
+  {{else}}
+   <a href="/auth/twitter"><img src="/img/sign-in-with-twitter-l.png" width="151" height="24"></a>
+  {{/if}}
+</body>
+<html>
