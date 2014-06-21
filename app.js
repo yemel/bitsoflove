@@ -2,19 +2,18 @@ var express = require('express');
 var path = require('path');
 var passport = require('passport');
 var logfmt = require('logfmt');
-var request = require('request');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var bodyParser = require('body-parser');
 var monk = require('monk');
+
+var config = require('./config.js');
+var monitor = require('./services/monitor.js');
+
 var bitcore = require('bitcore');
 bitcore.buffertools.extend();
 
 var TwitterStrategy = require('passport-twitter').Strategy;
-
-// ENVIRONMENT
-var TWITTER_CONSUMER_KEY = process.env.T_API_KEY;
-var TWITTER_CONSUMER_SECRET = process.env.T_API_SECRET;
-var DOMAIN = process.env.DOMAIN;
 
 var mongoUri = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/bitlove';
 var db = monk(mongoUri);
@@ -29,9 +28,9 @@ passport.deserializeUser(function(obj, done) {
 });
 
 passport.use(new TwitterStrategy({
-    consumerKey: TWITTER_CONSUMER_KEY,
-    consumerSecret: TWITTER_CONSUMER_SECRET,
-    callbackURL: DOMAIN + '/auth/twitter/callback'
+    consumerKey: config.TWITTER_CONSUMER_KEY,
+    consumerSecret: config.TWITTER_CONSUMER_SECRET,
+    callbackURL: config.DOMAIN + '/auth/twitter/callback'
   },
   function(token, tokenSecret, profile, done) {
     process.nextTick(function () {
@@ -50,6 +49,7 @@ app.set('view engine', 'hbs');
 
 app.use(logfmt.requestLogger());
 app.use(express.static(__dirname + '/public'));
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(cookieParser());
 app.use(session({ secret: process.env.SECRET }));
@@ -85,11 +85,21 @@ app.get('/', function(req, res) {
   res.render('index', {user: req.user});
 });
 
-app.get('/data', function(req, res) {
+app.post('/payments', function(req, res) {
+  var payment = JSON.parse(Object.keys(req.body)[0]).signed_data;
+  console.log('Payment received at ' + payment.address + ' for ' + payment.amount_btc + ' btc');
+
   var collection = req.db.get('bits');
-  collection.findOne({username: 'yemel', cause: 'bitcoin'}, function onFind(err, vouch){
-    console.log(err, vouch);
-    res.send('Hola');
+  collection.findOne({address: payment.address}, function onFind(err, bit) {
+    if (err) throw err;
+    if (!bit) throw new Error('not address found');
+    if (payment.amount < 10000) return res.send('ok'); // TODO: How much your love is worth?
+
+    bit.paymentTx = payment.txhash;
+    bit.paymentAmount = payment.amount;
+    bit.payed = new Date();
+    collection.updateById(bit._id, bit);
+    res.send('ok');
   });
 });
 
@@ -119,6 +129,11 @@ app.get('/love/h/:hashtag', function(req, res) {
 
     collection.insert(bit, function onInsert(err, bit){
       if (err) throw err;
+
+      monitor.register(addr, function(err, data) {
+        if (err) throw err;
+      });
+
       res.render('wall', {cause: hashtag, bit: bit, user: req.user});
     });
   });

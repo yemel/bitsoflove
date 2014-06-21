@@ -21,6 +21,7 @@
   "homepage": "https://github.com/yemel/bitsoflove",
   "dependencies": {
     "bitcore": "^0.1.24",
+    "body-parser": "^1.4.3",
     "consolidate": "^0.10.0",
     "cookie-parser": "^1.1.0",
     "express": "^4.4.1",
