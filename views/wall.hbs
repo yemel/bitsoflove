@@ -1,11 +1,20 @@
 <html>
 <title>BitsOfLove.me | Show your support with bitcoins</title>
 <body>
-  <h1>The Wall of {{topic}}</h1>
+  <h1>The Wall of {{cause}}</h1>
   {{#if user}}
-    Hey @{{ user.username }}, Address: xxxxx / QR: xxxxxx
+    Hey @{{ user.username }}, Address: {{ bit.address }} / QR: <span id="qr" data-address="bitcoin:{{ bit.address }}"></span>
   {{else}}
    <a href="/auth/twitter"><img src="/img/sign-in-with-twitter-l.png" width="151" height="24"></a>
   {{/if}}
+
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      var address = $('#qr').data('address');
+      $('#qr').html('').qrcode(address);
+    });
+  </script>
 </body>
 <html>
